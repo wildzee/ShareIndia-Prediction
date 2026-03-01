@@ -1,6 +1,6 @@
 # Share India Long-Term Stock Predictor
 
-This project contains a complete machine learning pipeline to predict the long-term price targets of **Share India Securities Limited (NSE: SHAREINDIA)**. It uses a hybrid ensemble model of LSTM (Deep Learning) and XGBoost (Gradient Boosting), incorporating historical price data, fundamentals, technical indicators, and news sentiment.
+This project contains a complete machine learning pipeline to predict the long-term price targets of **Share India Securities Limited (NSE: SHAREINDIA)**. It uses a hybrid ensemble model of LSTM (Deep Learning), XGBoost (Gradient Boosting), and a standalone RandomForest classifier for next-day direction prediction, incorporating historical price data, fundamentals, technical indicators, and news sentiment.
 
 ## Architecture & Data Stack
 All data is retrieved from 100% free, zero-login sources:
@@ -19,11 +19,15 @@ ShareIndia-Predictor/
 ├── 04_model_training.ipynb       # Train LSTM + XGBoost -> save to /models/
 ├── 05_prediction.ipynb           # Generate forecasts + Buy/Hold/Sell signal
 ├── 06_backtest.ipynb             # Simulate historical signals -> backtest report
+├── predict_shareindia_rf.py      # Standalone RF direction backtesting script (NVDA Style)
+├── app.py                        # Streamlit web application
 ├── config.yaml                   # Core configuration
 ├── requirements.txt              # Standardized dependencies
 └── utils/
     ├── data_utils.py             # Data fetching and TA features
-    └── model_utils.py            # Model training and prediction
+    ├── model_utils.py            # Model training and prediction
+    ├── pipeline_utils.py         # App pipeline orchestration
+    └── rf_utils.py               # RandomForest feature engineering and backtest logic
 ```
 
 ## Setup & Installation
@@ -51,7 +55,13 @@ streamlit run app.py
 ```
 1. Open the provided `Local URL` in your browser.
 2. Search for any valid NSE company (e.g. `Reliance Industries`).
-3. Click **Run Prediction Pipeline** to trigger real-time data ingestion and multi-horizon model training.
+3. Click **Run Prediction Pipeline** to trigger real-time data ingestion, multi-horizon model training (LSTM/XGBoost), and the RandomForest direction backtest simultaneously.
+
+### Running the Standalone RF Evaluator
+If you only want to test the RandomForest next-day direction model (adapted from the NVDA approach) and view its historical accuracy plot in the terminal:
+```bash
+python predict_shareindia_rf.py
+```
 
 ---
 
@@ -83,6 +93,8 @@ jupyter nbconvert --to notebook --execute 06_backtest.ipynb
 
 The prediction pipeline outputs:
 - **`current_price`**: the last fetched closing price
-- **`monthly_target` / `yearly_target`**: predicted future prices
-- **`monthly_upside` / `yearly_upside`**: expected returns in percentages
-- **`signal`**: `BUY`, `HOLD`, or `SELL` based on predicted upside, RSI, and MACD.
+- **`monthly_target` / `yearly_target`**: predicted future prices (from LSTM/XGBoost)
+- **`monthly_upside` / `yearly_upside`**: expected returns in percentages (from LSTM/XGBoost)
+- **`LSTM+XGBoost Target Signal`**: `BUY`, `HOLD`, or `SELL` based on long-term predicted upside, RSI, and MACD.
+- **`RF Direction Signal`**: binary prediction of whether tomorrow's close will be `UP ↑` or `DOWN ↓`.
+- **`RF Backtest Precision`**: historical win rate (%) of the 50-day rolling Walk-Forward backtest for the selected stock.

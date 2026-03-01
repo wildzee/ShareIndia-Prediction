@@ -1,0 +1,39 @@
+stock:
+  ticker: "SHAREINDIA.NS"
+  name: "Share India Securities"
+  exchange: "NSE"
+
+data:
+  start_date: "2018-01-01"
+  end_date: "today"
+  raw_dir: "data/raw"
+  processed_dir: "data/processed"
+  feature_file: "data/processed/features.csv"
+
+model:
+  lstm:
+    sequence_length: 60
+    units: [128, 64]
+    dropout: 0.2
+    epochs: 100
+    batch_size: 32
+    learning_rate: 0.001
+  xgboost:
+    n_estimators: 500
+    max_depth: 6
+    learning_rate: 0.05
+    subsample: 0.8
+  ensemble:
+    lstm_weight: 0.55
+    xgboost_weight: 0.45
+
+signals:
+  buy_threshold: 0.05
+  sell_threshold: 0.02
+  rsi_overbought: 70
+  rsi_oversold: 35
+  confidence_min: 0.60
+
+backtest:
+  initial_capital: 100000
+  position_size: 0.20
